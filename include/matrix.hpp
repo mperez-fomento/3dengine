@@ -18,8 +18,8 @@ namespace matrix {
 
 // The identity matrix
     template<size_t R>
-    inline const matrix::Matrix<R, R> I() {
-        matrix::Matrix<R, R> result {};
+    inline const Matrix<R, R> I() {
+        Matrix<R, R> result {};
         for (int i = 0; i < R; ++i) {
             result[i][i] = 1;
         }
@@ -27,13 +27,27 @@ namespace matrix {
     }
 
 // 3D vector
-    using Vector3 = matrix::Row<3>;
+    using Vector3 = Row<3>;
+
+// Homogeneous coordinates
+    using Vector4 = Row<4>;
+
+// 4x4 Matrix
+    using Matrix4x4 = Matrix<4, 4>;
 }
 
 template<size_t C>
 std::ostream & operator<<(std::ostream& out, const matrix::Row<C>& v) {
     for (const auto elem : v) {
         out << elem << "\t";
+    }
+    return out;
+}
+
+template<size_t R, size_t C>
+std::ostream & operator<<(std::ostream& out, const matrix::Matrix<R, C> m) {
+    for (const auto row : m) {
+        out << row << "\n";
     }
     return out;
 }
@@ -127,6 +141,17 @@ const matrix::Row<C> operator*(const matrix::Row<R>& r, const matrix::Matrix<R, 
         result = result + r[i] * m[i];
     }
     return result;
+}
+
+const matrix::Vector4 normalize(const matrix::Vector4& v) {
+    if (v[3] != 0 && v[3] != 1) {
+        return matrix::Vector4 {v[0]/v[3], v[1]/v[3], v[2]/v[3], 1};
+    }
+    return v;
+}
+
+const matrix::Vector4 homogenize(const matrix::Vector3& v) {
+    return matrix::Vector4{v[0], v[1], v[2], 1};
 }
 
 #endif // MATRIX_H_

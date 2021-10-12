@@ -72,3 +72,17 @@ TEST_CASE("Identity matrix times any matrix or row is that matrix or row", "[mat
     REQUIRE(m * matrix::I<3>() == m);
     REQUIRE(r * matrix::I<3>() == r);
 }
+
+TEST_CASE("Homegeneous vectors can be normalized", "[row]") {
+    matrix::Vector4 v {2, 4, 6, 2};
+    matrix::Vector4 w {2, 4, 6, 0};
+    matrix::Vector4 x {2, 4, 6, 1};
+    REQUIRE(normalize(v) == matrix::Vector4{1, 2, 3, 1});
+    REQUIRE(normalize(w) == matrix::Vector4{2, 4, 6, 0});
+    REQUIRE(normalize(x) == matrix::Vector4{2, 4, 6, 1});
+}
+
+TEST_CASE("3D vectors can be transformed into homogeneous coordinate vectors", "[row]") {
+    matrix::Vector3 v {1, 2, 3};
+    REQUIRE(homogenize(v) == matrix::Vector4{1, 2, 3, 1});
+}
