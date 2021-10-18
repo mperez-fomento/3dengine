@@ -54,11 +54,11 @@ namespace e3d {
             }
             const matrix::Matrix4x4 projectionMatrix() const {
                 matrix::Matrix4x4 pM {};
-                pM[0][0] = 1 / fov; // Considering a square canvas
-                pM[1][1] = 1 / fov;
+                pM[0][0] = 1 / tan(fov*3.141592f/360.0); // Considering a square canvas
+                pM[1][1] = 1 / tan(fov*3.141592f/360.0);
                 pM[2][2] = - far / (far - near);
                 pM[3][2] = - far * near / (far - near);
-                pM[2][3] = - 1.0;
+                pM[2][3] = - 1;
                 pM[3][3] = 0.0;
                 return pM;
             }
@@ -82,7 +82,7 @@ namespace e3d {
                 setRotation(r[0], r[1], r[2]);
             }
             void rotate(const double x, const double y, const double z) {
-                setRotation(position + matrix::Vector3{x, y, z});
+                setRotation(rotation + matrix::Vector3{x, y, z});
             }
         public:
             float focal_length;
@@ -153,14 +153,18 @@ namespace e3d {
             float aspectRatio;
 
             sf::Vector2f raster(matrix::Vector3 point) {
-                matrix::Vector4 hpoint = homogenize(point) * camera.projectionMatrix();
-                return sf::Vector2f(hpoint[0] * window.getSize().x,
-                                    (1 - hpoint[1]) * window.getSize().y);
+                matrix::Vector4 hpoint = normalize(homogenize(point) * camera.projectionMatrix());
+                return sf::Vector2f((hpoint[0] + 1) * 0.5 * window.getSize().x,
+                                    (1 - (hpoint[1] + 1) * 0.5) * window.getSize().y);
             }
     };
 
     class Poly {
         public:
+            Poly() {
+                move(0, 0, 0);
+                rotate(0, 0, 0);
+            }
             std::vector<Triangle> triangles;
             matrix::Vector3 position;
             matrix::Vector3 rotation;
@@ -170,17 +174,18 @@ namespace e3d {
                 traslationMatrix = computeTraslationMatrix();
                 objectToWorldMatrix = computeObjectToWorldMatrix();
             }
-            void rotate(double xrot, double yrot, double zrot) {
-                rotation = rotation + matrix::Vector3{xrot, yrot, zrot};
+            void setRotation(const matrix::Vector3& r) {
+                rotation = r;
                 rotationMatrix = computeRotationMatrix();
                 objectToWorldMatrix = computeObjectToWorldMatrix();
             }
             void setRotation(double xrot, double yrot, double zrot) {
-                rotation = matrix::Vector3{xrot, yrot, zrot};
-                rotationMatrix = computeRotationMatrix();
-                objectToWorldMatrix = computeObjectToWorldMatrix();
+                setRotation(matrix::Vector3{xrot, yrot, zrot});
             }
-            void draw(e3d::Device& dev) {
+            void rotate(double xrot, double yrot, double zrot) {
+                setRotation(rotation + matrix::Vector3{xrot, yrot, zrot});
+            }
+             void draw(e3d::Device& dev) {
                 for (auto triangle : triangles) {
                     dev.draw(triangle, objectToWorldMatrix);
                 }

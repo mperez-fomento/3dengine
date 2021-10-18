@@ -23,6 +23,6 @@ add_custom_target(run COMMAND 3dengine WORKING_DIRECTORY ${BIN_DIR})
 find_package(Catch2 3 REQUIRED)
 add_executable(tests "test/test.cpp")
 target_include_directories(tests PRIVATE "include")
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain sfml-graphics sfml-audio GL)
 
 add_custom_target(test COMMAND tests WORKING_DIRECTORY ${BIN_DIR})

@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "matrix.hpp"
+#include "engine3d.hpp"
 
 TEST_CASE("Rows can be checked for equality", "[columns]") {
     matrix::Row<3> c {1, 2, 3};
@@ -85,4 +86,17 @@ TEST_CASE("Homegeneous vectors can be normalized", "[row]") {
 TEST_CASE("3D vectors can be transformed into homogeneous coordinate vectors", "[row]") {
     matrix::Vector3 v {1, 2, 3};
     REQUIRE(homogenize(v) == matrix::Vector4{1, 2, 3, 1});
+}
+
+TEST_CASE("Object-to-World matrix is correctly computed", "[poly]") {
+    e3d::Poly frontTri;
+    frontTri.triangles.push_back({{-1, -1, 0}, {0, 1, 0}, {1, -1, 0}});
+    e3d::Poly sideTri;
+    sideTri.triangles.push_back({{0, -1, -1}, {0, 1, 0}, {0, -1, -1}});
+    e3d::Poly horTri;
+    horTri.triangles.push_back({{-1, 0, -1}, {0, 0, 1}, {1, 0, -1}});
+
+    SECTION("Without moving or rotating, o2w matrix is the identity matrix") {
+        REQUIRE(frontTri.objectToWorldMatrix - matrix::I<4>() == 2*matrix::I<4>());
+    }
 }

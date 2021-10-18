@@ -12,13 +12,6 @@ int main() {
     Time elapsedTime;
     double rotation = 0.0;
 
-    e3d::Mesh* tetrahedron = new e3d::Mesh{{0, 0, 0}, {0, 1, 0},
-                                           {0, 1, 0}, {1, 0, 0},
-                                           {1, 0, 0}, {0, 0, 0},
-                                           {0, 0, 1}, {0, 0, 0},
-                                           {0, 0, 1}, {0, 1, 0},
-                                           {1, 0, 0}, {0, 0, 1}};
-
     e3d::Poly cube;
     cube.triangles.push_back({{-1, -1, 1}, {1, -1, -1}, {1, -1, 1}});
     cube.triangles.push_back({{-1, -1, 1}, {-1, -1, -1}, {1, -1, -1}});
@@ -33,14 +26,15 @@ int main() {
     cube.triangles.push_back({{1, -1, 1}, {1, -1, -1}, {1, 1, -1}});
     cube.triangles.push_back({{1, -1, 1}, {1, 1, -1}, {1, 1, 1}});
 
-    cube.move(1, 0.5, 10);
+    cube.move(0, 0, 1);
     cube.rotate(0, 0, 0);
 
     double x = 1, y = 1, z = 1;
     matrix::Matrix4x4 obj2world;
 
-    e3d::Device dev {win, e3d::Camera(1, 2, 0.01f, 1000.0f, 5*3.141592f/6.0f)};
-    dev.camera.setPosition(0, 1, 5);
+    e3d::Device dev {win, e3d::Camera(1, 10, 0.01f, 100.0f, 89.0f)};
+    dev.camera.setPosition(0, 0, 0);
+    cout << dev.camera.projectionMatrix() << "\n";
 
     while (win.isOpen()) {
         Event event;
@@ -50,22 +44,36 @@ int main() {
                 win.close();
             }
             if (event.type == Event::KeyPressed) {
-                if (event.key.code == Keyboard::Q) {
-                    win.close();
+                switch (event.key.code) {
+                    case Keyboard::Q:
+                        win.close();
+                        break;
+                    case Keyboard::Left:
+                        dev.camera.move(-0.1, 0, 0);
+                        break;
+                    case Keyboard::Right:
+                        dev.camera.move(0.1, 0, 0);
+                        break;
+                    case Keyboard::Up:
+                        dev.camera.move(0, 0, -0.1);
+                        break;
+                    case Keyboard::Down:
+                        dev.camera.move(0, 0, 0.1);
+                        break;
+                    case Keyboard::A:
+                        dev.camera.rotate(0, 0, -0.01);
+                        break;
+                    case Keyboard::D:
+                        dev.camera.rotate(0, 0, 0.01);
+                        break;
+                    case Keyboard::W:
+                        dev.camera.rotate(-0.01, 0, 0);
+                        break;
+                    case Keyboard::S:
+                        dev.camera.rotate(0.01, 0, 0);
+                        break;
                 }
-                else if (event.key.code == Keyboard::Left) {
-                    dev.camera.move(-0.01, 0, 0);
-                }
-                else if (event.key.code == Keyboard::Right) {
-                    dev.camera.move(0.01, 0, 0);
-                }
-                else if (event.key.code == Keyboard::Up) {
-                    dev.camera.move(0, 0, -0.01);
-                }
-                else if (event.key.code == Keyboard::Down) {
-                    dev.camera.move(0, 0, 0.01);
-                }
-
+                cout << dev.camera.rotation << "\n";
             }
         }
 
@@ -73,13 +81,11 @@ int main() {
         ImGui::SFML::Update(win, elapsedTime);
 
         rotation += elapsedTime.asSeconds() * 0.2;
-        obj2world = e3d::buildRotationMatrix(0, rotation, 0) * e3d::buildTraslationMatrix(x, y, z);
 
-        cube.setRotation(rotation, 0, 0);
+        cube.setRotation(0, rotation, 0);
 
         win.clear(Color::Black);
         ImGui::SFML::Render(win);
-        dev.draw(*tetrahedron, obj2world);
         cube.draw(dev);
         win.display();
     }
